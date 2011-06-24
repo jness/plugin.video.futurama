@@ -14,15 +14,11 @@ def getRTMP(uri):
 	stream = re.search('(rtmpe://.*_1720.mp4)', link).group(1)
 	return stream
 
-def CATEGORIES():
-	addDir("Futurama", "http://www.comedycentral.com/full-episodes/futurama", 1, "")
-
-
 def INDEX(url):
 	link = getURL(url)
 	match=re.compile("<a href=\"(http://www.comedycentral.com/full-episodes/futurama/(\S*))\">\n[\s]*<img width='\d*' height='\d*' src='(\S*)'").findall(link)
 	
-	for url,name,thumbnail in match:
+	for url,name,thumbnail in sorted(match):
 		addDownLink(name, url, 2, thumbnail)
 
 
@@ -89,33 +85,31 @@ name=None
 mode=None
 
 try:
-        url=urllib.unquote_plus(params["url"])
+    url=urllib.unquote_plus(params["url"])
 except:
-        pass
+    pass
 try:
-        name=urllib.unquote_plus(params["name"])
+    name=urllib.unquote_plus(params["name"])
 except:
-        pass
+    pass
 try:
-        mode=int(params["mode"])
+    mode=int(params["mode"])
 except:
-        pass
+    pass
 
 print "Mode: "+str(mode)
 print "URL: "+str(url)
 print "Name: "+str(name)
 
-if mode==None or url==None or len(url)<1:
-        print ""
-        CATEGORIES()
 
-elif mode==1:
-        print ""+url
-        INDEX(url)
+if mode==None or url==None or len(url)<1:
+	url = 'http://www.comedycentral.com/full-episodes/futurama'
+	print ""+url
+	INDEX(url)
 
 elif mode==2:
-        print ""+url
-        VIDEOLINKS(url,name)
+	print ""+url
+	VIDEOLINKS(url,name)
 
 
 xbmcplugin.endOfDirectory(int(sys.argv[1]))
