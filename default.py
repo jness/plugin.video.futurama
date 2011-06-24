@@ -11,8 +11,8 @@ def getURL(url):
 	
 def getRTMP(uri):
 	link = getURL('http://www.comedycentral.com/global/feeds/entertainment/media/mediaGenEntertainment.jhtml?uri=%s' % uri)
-	stream = re.search('(rtmpe://.*_1720.mp4)', link).group(1)
-	return stream
+	streams = re.compile('(rtmpe://.*futurama_.*.mp4)').findall(link)
+	return streams[-1]
 
 def INDEX(url):
 	link = getURL(url)
@@ -34,6 +34,7 @@ def VIDEOLINKS(url,name):
 	for uri in rtmp_uri:
 		stream = getRTMP(uri)
 		item = xbmcgui.ListItem(name)
+		stream = stream.replace('rtmpe', 'rtmp')
 		playlist.add(stream, item)
 		
 	xbmc.Player().play(playlist)
