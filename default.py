@@ -1,37 +1,48 @@
 import urllib,urllib2,re,xbmcplugin,xbmcgui
 
-useragent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3'
+def getURL(url):
+	useragent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3'
+	req = urllib2.Request(url)
+	req.add_header('User-Agent', useragent)
+	response = urllib2.urlopen(req)
+	link=response.read()
+	response.close()
+	return link
+	
+def getRTMP(uri):
+	link = getURL('http://www.comedycentral.com/global/feeds/entertainment/media/mediaGenEntertainment.jhtml?uri=%s' % uri)
+	stream = re.search('(rtmpe://.*_1720.mp4)', link).group(1)
+	return stream
 
 def CATEGORIES():
 	addDir("Futurama", "http://www.comedycentral.com/full-episodes/futurama", 1, "")
 
 
 def INDEX(url):
-	req = urllib2.Request(url)
-	req.add_header('User-Agent', useragent)
-	response = urllib2.urlopen(req)
-	link=response.read()
-	response.close()
+	link = getURL(url)
 	match=re.compile("<a href=\"(http://www.comedycentral.com/full-episodes/futurama/(\S*))\">\n[\s]*<img width='\d*' height='\d*' src='(\S*)'").findall(link)
-
+	
 	for url,name,thumbnail in match:
 		addDownLink(name, url, 2, thumbnail)
 
 
-
 def VIDEOLINKS(url,name):
-	req = urllib2.Request(url)
-	req.add_header('User-Agent', useragent)
-	response = urllib2.urlopen(req)
-	link=response.read()
-	response.close()
-	match=re.compile('<object id="full_ep_video_player" type="application/x-shockwave-flash" classid=".*" width="\d*" height="\d*" xmlns:media=".*" rel="media:video" resource="(.*)" xmlns:dc=".*">').findall(link)
-	for url in match:
-		listitem = xbmcgui.ListItem(name)	
-		listitem.setInfo('video', {'Title': name, 'Genre': 'Cartoon'})	
-		xbmc.Player().play(url, listitem)
-
-
+	link = getURL(url)
+	uri = re.search('<param name="movie" value="http://media.mtvnservices.com/(.*)"', link).group(1)
+	rtmp = getURL('http://shadow.comedycentral.com/feeds/video_player/mrss/?uri=%s' % uri)
+	rtmp_uri = re.compile('<guid isPermaLink="false">(.*)</guid>').findall(rtmp)
+	
+	playlist = xbmc.PlayList(1)
+	playlist.clear()
+	
+	for uri in rtmp_uri:
+		stream = getRTMP(uri)
+		item = xbmcgui.ListItem(name)
+		playlist.add(stream, item)
+		
+	xbmc.Player().play(playlist)
+	xbmc.executebuiltin('XBMC.ActivateWindow(fullscreenvideo)')
+	
 
 def get_params():
         param=[]
