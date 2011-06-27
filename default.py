@@ -34,10 +34,10 @@ def VIDEOLINKS(url,name):
 	stacked_url = 'stack://'
 	for uri in rtmp_uri:
 		stream = getRTMP(uri)
-		stream = stream.replace('rtmpe', 'rtmp')
-		stacked_url += stream.replace(',',',,')+' , '
+        stream = stream + ' swfurl=http://media.mtvnservices.com/player/prime/mediaplayerprime.1.6.0.swf swfvfy=true'
+		stacked_url += stream.replace(',',',,')+ ' , '
 	stacked_url = stacked_url[:-3]
-	
+
 	item = xbmcgui.ListItem(name)
 	playlist.add(stacked_url, item)
 	
